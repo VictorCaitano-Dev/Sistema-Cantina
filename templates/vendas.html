@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendas</title>
+</head>
+<body>
+    <h1>Vendas</h1>
+
+    {% with mensagens = get_flashed_messages() %}
+        {% if mensagens %}
+            {% for mensagem in mensagens %}
+                <p><strong>{{ mensagem }}</strong></p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Registrar venda</h2>
+
+    <form method="POST">
+        <label>Produto:</label>
+        <select name="produto_id" required>
+            {% for produto in produtos %}
+                <option value="{{ produto[0] }}">
+                    {{ produto[1] }} - Estoque: {{ produto[3] }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Quantidade:</label>
+        <input type="number" name="quantidade" min="1" required>
+
+        <br><br>
+
+        <button type="submit">Registrar venda</button>
+    </form>
+
+    <h2>Histórico de vendas</h2>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Valor total</th>
+            <th>Data</th>
+        </tr>
+
+        {% for venda in vendas %}
+        <tr>
+            <td>{{ venda[0] }}</td>
+            <td>{{ venda[1] }}</td>
+            <td>{{ venda[2] }}</td>
+            <td>R$ {{ "%.2f"|format(venda[3]) }}</td>
+            <td>{{ venda[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+
+    <a href="/produtos">Produtos</a>
+    <br>
+    <a href="/">Voltar</a>
+</body>
+</html>

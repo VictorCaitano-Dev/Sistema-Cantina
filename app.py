@@ -32,7 +32,7 @@ def produtos():
 
         conn.commit()
         conn.close()
-        
+
         flash("Produto cadastrado com sucesso!")
         return redirect('/produtos')
 
@@ -113,6 +113,35 @@ def vendas():
     conn.close()
 
     return render_template('vendas.html', produtos=produtos, vendas=vendas)
+
+@app.route('/excluir_produto/<int:id>')
+def excluir_produto(id):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM vendas
+        WHERE produto_id = ?
+    """, (id,))
+
+    total_vendas = cursor.fetchone()[0]
+
+    if total_vendas > 0:
+        flash("Não é possível excluir este produto porque ele já possui vendas registradas.")
+        conn.close()
+        return redirect('/produtos')
+
+    cursor.execute("""
+        DELETE FROM produtos
+        WHERE id = ?
+    """, (id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Produto excluído com sucesso!")
+    return redirect('/produtos')
 
 
 if __name__ == '__main__':

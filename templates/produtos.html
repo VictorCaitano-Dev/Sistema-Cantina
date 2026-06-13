@@ -37,23 +37,27 @@
 
     <h2>Produtos cadastrados</h2>
 
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Preço</th>
-            <th>Estoque</th>
-        </tr>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Preço</th>
+        <th>Estoque</th>
+        <th>Ações</th>
+    </tr>
 
-        {% for produto in produtos %}
-        <tr>
-            <td>{{ produto[0] }}</td>
-            <td>{{ produto[1] }}</td>
-            <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
-            <td>{{ produto[3] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    {% for produto in produtos %}
+    <tr>
+        <td>{{ produto[0] }}</td>
+        <td>{{ produto[1] }}</td>
+        <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
+        <td>{{ produto[3] }}</td>
+        <td>
+            <a href="/excluir_produto/{{ produto[0] }}">Excluir</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 
     <br>
 

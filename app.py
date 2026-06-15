@@ -68,10 +68,8 @@ def vendas():
 
             if quantidade <= 0:
                 flash("A quantidade precisa ser maior que zero.")
-
             elif quantidade > estoque:
                 flash(f"Estoque insuficiente. Estoque atual de {nome}: {estoque}")
-
             else:
                 valor_total = preco * quantidade
                 novo_estoque = estoque - quantidade
@@ -88,7 +86,6 @@ def vendas():
                 """, (novo_estoque, produto_id))
 
                 conn.commit()
-
                 flash(f"Venda registrada com sucesso! Total: R$ {valor_total:.2f}")
 
         conn.close()
@@ -113,6 +110,7 @@ def vendas():
     conn.close()
 
     return render_template('vendas.html', produtos=produtos, vendas=vendas)
+
 
 @app.route('/excluir_produto/<int:id>')
 def excluir_produto(id):
@@ -142,6 +140,40 @@ def excluir_produto(id):
 
     flash("Produto excluído com sucesso!")
     return redirect('/produtos')
+
+
+@app.route('/editar_produto/<int:id>', methods=['GET', 'POST'])
+def editar_produto(id):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        nome = request.form['nome']
+        preco = float(request.form['preco'])
+        estoque = int(request.form['estoque'])
+
+        cursor.execute("""
+            UPDATE produtos
+            SET nome = ?, preco = ?, estoque = ?
+            WHERE id = ?
+        """, (nome, preco, estoque, id))
+
+        conn.commit()
+        conn.close()
+
+        flash("Produto atualizado com sucesso!")
+        return redirect('/produtos')
+
+    cursor.execute("""
+        SELECT id, nome, preco, estoque
+        FROM produtos
+        WHERE id = ?
+    """, (id,))
+
+    produto = cursor.fetchone()
+    conn.close()
+
+    return render_template('editar_produto.html', produto=produto)
 
 
 if __name__ == '__main__':

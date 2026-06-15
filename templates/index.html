@@ -6,8 +6,21 @@
 <body>
     <h1>Sistema da Cantina</h1>
 
+    <h2>Dashboard</h2>
+
+    <p>Total de produtos: {{ total_produtos }}</p>
+
+    <p>Total de vendas: {{ total_vendas }}</p>
+
+    <p>Faturamento total: R$ {{ "%.2f"|format(faturamento) }}</p>
+
+    <hr>
+
     <a href="/produtos">Produtos</a>
-    <br>
+
+    <br><br>
+
     <a href="/vendas">Vendas</a>
+
 </body>
 </html>

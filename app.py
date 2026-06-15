@@ -12,7 +12,32 @@ def conectar():
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # Total de produtos
+    cursor.execute("SELECT COUNT(*) FROM produtos")
+    total_produtos = cursor.fetchone()[0]
+
+    # Total de vendas
+    cursor.execute("SELECT COUNT(*) FROM vendas")
+    total_vendas = cursor.fetchone()[0]
+
+    # Faturamento total
+    cursor.execute("SELECT SUM(valor_total) FROM vendas")
+    faturamento = cursor.fetchone()[0]
+
+    if faturamento is None:
+        faturamento = 0
+
+    conn.close()
+
+    return render_template(
+        'index.html',
+        total_produtos=total_produtos,
+        total_vendas=total_vendas,
+        faturamento=faturamento
+    )
 
 
 @app.route('/produtos', methods=['GET', 'POST'])

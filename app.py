@@ -30,13 +30,39 @@ def home():
     if faturamento is None:
         faturamento = 0
 
+    # Produto mais vendido
+    cursor.execute("""
+        SELECT
+            produtos.nome,
+            SUM(vendas.quantidade) AS total_vendido
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        GROUP BY produtos.id, produtos.nome
+        ORDER BY total_vendido DESC
+        LIMIT 1
+    """)
+
+    produto_mais_vendido = cursor.fetchone()
+
+    # Produtos com estoque baixo
+    cursor.execute("""
+        SELECT nome, estoque
+        FROM produtos
+        WHERE estoque <= 5
+        ORDER BY estoque ASC
+    """)
+
+    estoque_baixo = cursor.fetchall()
+
     conn.close()
 
     return render_template(
         'index.html',
         total_produtos=total_produtos,
         total_vendas=total_vendas,
-        faturamento=faturamento
+        faturamento=faturamento,
+        produto_mais_vendido=produto_mais_vendido,
+        estoque_baixo=estoque_baixo
     )
 
 

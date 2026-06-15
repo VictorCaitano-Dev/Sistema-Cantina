@@ -13,6 +13,27 @@
     <p>Total de vendas: {{ total_vendas }}</p>
 
     <p>Faturamento total: R$ {{ "%.2f"|format(faturamento) }}</p>
+    {% if produto_mais_vendido %}
+    <p>
+        Produto mais vendido:
+        {{ produto_mais_vendido[0] }}
+        ({{ produto_mais_vendido[1] }} unidades)
+    </p>
+{% else %}
+    <p>Produto mais vendido: Nenhuma venda registrada.</p>
+{% endif %}
+
+    <h3>Produtos com estoque baixo</h3>
+
+{% if estoque_baixo %}
+    <ul>
+        {% for produto in estoque_baixo %}
+            <li>{{ produto[0] }} - {{ produto[1] }} unidades</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Nenhum produto com estoque baixo.</p>
+{% endif %}
 
     <hr>
 

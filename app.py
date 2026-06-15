@@ -5,53 +5,42 @@ import os
 app = Flask(__name__)
 app.secret_key = 'cantina'
 
+
 def conectar():
-    caminho = os.path.abspath("cantina2.db")
-    return sqlite3.connect(caminho)
+    return sqlite3.connect("cantina2.db")
 
 
+# ---------------- HOME ----------------
 @app.route('/')
 def home():
     conn = conectar()
     cursor = conn.cursor()
 
-    # Total de produtos
     cursor.execute("SELECT COUNT(*) FROM produtos")
     total_produtos = cursor.fetchone()[0]
 
-    # Total de vendas
     cursor.execute("SELECT COUNT(*) FROM vendas")
     total_vendas = cursor.fetchone()[0]
 
-    # Faturamento total
     cursor.execute("SELECT SUM(valor_total) FROM vendas")
-    faturamento = cursor.fetchone()[0]
+    faturamento = cursor.fetchone()[0] or 0
 
-    if faturamento is None:
-        faturamento = 0
-
-    # Produto mais vendido
     cursor.execute("""
-        SELECT
-            produtos.nome,
-            SUM(vendas.quantidade) AS total_vendido
+        SELECT produtos.nome, SUM(vendas.quantidade)
         FROM vendas
         JOIN produtos ON vendas.produto_id = produtos.id
         GROUP BY produtos.id, produtos.nome
-        ORDER BY total_vendido DESC
+        ORDER BY SUM(vendas.quantidade) DESC
         LIMIT 1
     """)
-
     produto_mais_vendido = cursor.fetchone()
 
-    # Produtos com estoque baixo
     cursor.execute("""
         SELECT nome, estoque
         FROM produtos
         WHERE estoque <= 5
         ORDER BY estoque ASC
     """)
-
     estoque_baixo = cursor.fetchall()
 
     conn.close()
@@ -66,10 +55,13 @@ def home():
     )
 
 
+# ---------------- PRODUTOS ----------------
 @app.route('/produtos', methods=['GET', 'POST'])
 def produtos():
     conn = conectar()
     cursor = conn.cursor()
+
+    busca = request.args.get('busca', '')
 
     if request.method == 'POST':
         nome = request.form['nome']
@@ -82,110 +74,30 @@ def produtos():
         """, (nome, preco, estoque))
 
         conn.commit()
-        conn.close()
-
         flash("Produto cadastrado com sucesso!")
         return redirect('/produtos')
 
-    cursor.execute("SELECT * FROM produtos")
-    produtos = cursor.fetchall()
+    if busca:
+        cursor.execute("""
+            SELECT * FROM produtos
+            WHERE nome LIKE ?
+        """, ('%' + busca + '%',))
+    else:
+        cursor.execute("SELECT * FROM produtos")
 
+    produtos = cursor.fetchall()
     conn.close()
 
     return render_template('produtos.html', produtos=produtos)
 
 
-@app.route('/vendas', methods=['GET', 'POST'])
-def vendas():
-    conn = conectar()
-    cursor = conn.cursor()
-
-    if request.method == 'POST':
-        produto_id = int(request.form['produto_id'])
-        quantidade = int(request.form['quantidade'])
-
-        cursor.execute("""
-            SELECT nome, preco, estoque
-            FROM produtos
-            WHERE id = ?
-        """, (produto_id,))
-
-        produto = cursor.fetchone()
-
-        if produto is None:
-            flash("Produto não encontrado.")
-        else:
-            nome, preco, estoque = produto
-
-            if quantidade <= 0:
-                flash("A quantidade precisa ser maior que zero.")
-            elif quantidade > estoque:
-                flash(f"Estoque insuficiente. Estoque atual de {nome}: {estoque}")
-            else:
-                valor_total = preco * quantidade
-                novo_estoque = estoque - quantidade
-
-                cursor.execute("""
-                    INSERT INTO vendas (produto_id, quantidade, valor_total)
-                    VALUES (?, ?, ?)
-                """, (produto_id, quantidade, valor_total))
-
-                cursor.execute("""
-                    UPDATE produtos
-                    SET estoque = ?
-                    WHERE id = ?
-                """, (novo_estoque, produto_id))
-
-                conn.commit()
-                flash(f"Venda registrada com sucesso! Total: R$ {valor_total:.2f}")
-
-        conn.close()
-        return redirect('/vendas')
-
-    cursor.execute("SELECT * FROM produtos")
-    produtos = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT 
-            vendas.id,
-            produtos.nome,
-            vendas.quantidade,
-            vendas.valor_total,
-            vendas.data_venda
-        FROM vendas
-        JOIN produtos ON vendas.produto_id = produtos.id
-        ORDER BY vendas.data_venda DESC
-    """)
-    vendas = cursor.fetchall()
-
-    conn.close()
-
-    return render_template('vendas.html', produtos=produtos, vendas=vendas)
-
-
+# ---------------- EXCLUIR PRODUTO ----------------
 @app.route('/excluir_produto/<int:id>')
 def excluir_produto(id):
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM vendas
-        WHERE produto_id = ?
-    """, (id,))
-
-    total_vendas = cursor.fetchone()[0]
-
-    if total_vendas > 0:
-        flash("Não é possível excluir este produto porque ele já possui vendas registradas.")
-        conn.close()
-        return redirect('/produtos')
-
-    cursor.execute("""
-        DELETE FROM produtos
-        WHERE id = ?
-    """, (id,))
-
+    cursor.execute("DELETE FROM produtos WHERE id = ?", (id,))
     conn.commit()
     conn.close()
 
@@ -193,6 +105,7 @@ def excluir_produto(id):
     return redirect('/produtos')
 
 
+# ---------------- EDITAR PRODUTO ----------------
 @app.route('/editar_produto/<int:id>', methods=['GET', 'POST'])
 def editar_produto(id):
     conn = conectar()
@@ -216,9 +129,7 @@ def editar_produto(id):
         return redirect('/produtos')
 
     cursor.execute("""
-        SELECT id, nome, preco, estoque
-        FROM produtos
-        WHERE id = ?
+        SELECT * FROM produtos WHERE id = ?
     """, (id,))
 
     produto = cursor.fetchone()
@@ -226,6 +137,151 @@ def editar_produto(id):
 
     return render_template('editar_produto.html', produto=produto)
 
+
+# ---------------- VENDAS ----------------
+@app.route('/vendas', methods=['GET', 'POST'])
+def vendas():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # ---------------- POST (REGISTRAR VENDA) ----------------
+    if request.method == 'POST':
+        try:
+            produto_id = int(request.form['produto_id'])
+            quantidade = int(request.form['quantidade'])
+        except:
+            flash("Dados inválidos")
+            return redirect('/vendas')
+
+        cursor.execute("""
+            SELECT nome, preco, estoque
+            FROM produtos
+            WHERE id = ?
+        """, (produto_id,))
+
+        produto = cursor.fetchone()
+
+        if not produto:
+            flash("Produto não encontrado")
+            return redirect('/vendas')
+
+        nome, preco, estoque = produto
+
+        if quantidade <= 0:
+            flash("Quantidade inválida")
+            return redirect('/vendas')
+
+        if quantidade > estoque:
+            flash(f"Estoque insuficiente (atual: {estoque})")
+            return redirect('/vendas')
+
+        total = preco * quantidade
+        novo_estoque = estoque - quantidade
+
+        # registrar venda
+        cursor.execute("""
+            INSERT INTO vendas (produto_id, quantidade, valor_total, data_venda)
+            VALUES (?, ?, ?, datetime('now'))
+        """, (produto_id, quantidade, total))
+
+        # atualizar estoque
+        cursor.execute("""
+            UPDATE produtos
+            SET estoque = ?
+            WHERE id = ?
+        """, (novo_estoque, produto_id))
+
+        conn.commit()
+
+        flash(f"Venda registrada: {quantidade}x {nome} - R$ {total:.2f}")
+        return redirect('/vendas')
+
+    # ---------------- GET (CARREGAR DADOS) ----------------
+
+    cursor.execute("SELECT id, nome, estoque FROM produtos")
+    produtos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT vendas.id, produtos.nome, vendas.quantidade, vendas.valor_total, vendas.data_venda
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        ORDER BY vendas.data_venda DESC
+    """)
+    vendas = cursor.fetchall()
+
+    cursor.execute("SELECT COALESCE(SUM(valor_total), 0) FROM vendas")
+    faturamento_total = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM vendas")
+    total_vendas = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COALESCE(SUM(quantidade), 0) FROM vendas")
+    total_itens = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "vendas.html",
+        produtos=produtos,
+        vendas=vendas,
+        faturamento_total=faturamento_total,
+        total_vendas=total_vendas,
+        total_itens=total_itens
+    )
+
+
+# ---------------- RELATÓRIO ----------------
+@app.route('/relatorio_vendas')
+def relatorio_vendas():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # 💰 TOTAL DO DIA (VALOR)
+    cursor.execute("""
+        SELECT COALESCE(SUM(valor_total), 0)
+        FROM vendas
+        WHERE date(data_venda) = date('now')
+    """)
+    vendas_dia_total = cursor.fetchone()[0]
+
+    # 📦 PRODUTOS VENDIDOS NO DIA
+    cursor.execute("""
+        SELECT 
+            produtos.nome,
+            SUM(vendas.quantidade) AS quantidade_total,
+            SUM(vendas.valor_total) AS valor_total
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        WHERE date(vendas.data_venda) = date('now')
+        GROUP BY produtos.nome
+        ORDER BY quantidade_total DESC
+    """)
+    produtos_dia = cursor.fetchall()
+
+    # 📅 TOTAL DO MÊS
+    cursor.execute("""
+        SELECT COALESCE(SUM(valor_total), 0)
+        FROM vendas
+        WHERE strftime('%Y-%m', data_venda) = strftime('%Y-%m', 'now')
+    """)
+    vendas_mes = cursor.fetchone()[0]
+
+    # 💰 TOTAL GERAL
+    cursor.execute("""
+        SELECT COALESCE(SUM(valor_total), 0)
+        FROM vendas
+    """)
+    vendas_total = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "relatorio_vendas.html",
+        vendas_dia_total=vendas_dia_total,
+        produtos_dia=produtos_dia,
+        vendas_mes=vendas_mes,
+        vendas_total=vendas_total
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

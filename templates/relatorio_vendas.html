@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Relatório de Vendas</title>
+</head>
+<body>
+
+    <h1>📊 Relatório de Vendas</h1>
+
+    <hr>
+
+    <h2>📅 Resumo do Dia</h2>
+    <p><strong>Total vendido hoje:</strong> R$ {{ "%.2f"|format(vendas_dia_total) }}</p>
+
+    <h3>📦 Produtos vendidos hoje</h3>
+
+    {% if produtos_dia and produtos_dia|length > 0 %}
+
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Total (R$)</th>
+            </tr>
+
+            {% for produto in produtos_dia %}
+            <tr>
+                <td>{{ produto[0] }}</td>
+                <td>{{ produto[1] }}</td>
+                <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    {% else %}
+        <p>Nenhuma venda hoje.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>📅 Este mês</h2>
+    <p>R$ {{ "%.2f"|format(vendas_mes) }}</p>
+
+    <h2>💰 Total geral</h2>
+    <p>R$ {{ "%.2f"|format(vendas_total) }}</p>
+
+    <br>
+
+    <a href="/vendas">⬅ Voltar</a>
+
+</body>
+</html>

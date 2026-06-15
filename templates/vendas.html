@@ -4,8 +4,10 @@
     <title>Vendas</title>
 </head>
 <body>
+
     <h1>Vendas</h1>
 
+    <!-- 🔔 Mensagens -->
     {% with mensagens = get_flashed_messages() %}
         {% if mensagens %}
             {% for mensagem in mensagens %}
@@ -14,16 +16,28 @@
         {% endif %}
     {% endwith %}
 
+    <!-- 📊 INDICADORES -->
+    <h2>📊 Indicadores</h2>
+
+    <p>💰 Faturamento total: R$ {{ "%.2f"|format(faturamento_total) }}</p>
+    <p>🛒 Total de vendas: {{ total_vendas }}</p>
+    <p>📦 Itens vendidos: {{ total_itens }}</p>
+
+    <hr>
+
+    <!-- 🛒 FORMULÁRIO DE VENDA -->
     <h2>Registrar venda</h2>
 
     <form method="POST">
         <label>Produto:</label>
         <select name="produto_id" required>
+
             {% for produto in produtos %}
                 <option value="{{ produto[0] }}">
-                    {{ produto[1] }} - Estoque: {{ produto[3] }}
+                    {{ produto[1] }} - Estoque: {{ produto[2] }}
                 </option>
             {% endfor %}
+
         </select>
 
         <br><br>
@@ -36,32 +50,48 @@
         <button type="submit">Registrar venda</button>
     </form>
 
+    <hr>
+
+    <!-- 📜 HISTÓRICO DE VENDAS -->
     <h2>Histórico de vendas</h2>
 
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Produto</th>
-            <th>Quantidade</th>
-            <th>Valor total</th>
-            <th>Data</th>
-        </tr>
+    {% if vendas and vendas|length > 0 %}
 
-        {% for venda in vendas %}
-        <tr>
-            <td>{{ venda[0] }}</td>
-            <td>{{ venda[1] }}</td>
-            <td>{{ venda[2] }}</td>
-            <td>R$ {{ "%.2f"|format(venda[3]) }}</td>
-            <td>{{ venda[4] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>ID</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Valor total</th>
+                <th>Data</th>
+            </tr>
+
+            {% for venda in vendas %}
+            <tr>
+                <td>{{ venda[0] }}</td>
+                <td>{{ venda[1] }}</td>
+                <td>{{ venda[2] }}</td>
+                <td>R$ {{ "%.2f"|format(venda[3]) }}</td>
+                <td>{{ venda[4] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    {% else %}
+        <p>Nenhuma venda registrada ainda.</p>
+    {% endif %}
 
     <br>
 
     <a href="/produtos">Produtos</a>
     <br>
     <a href="/">Voltar</a>
+
+    <br><br>
+
+    <a href="/relatorio_vendas">
+        📊 Ver Relatório de Vendas
+    </a>
+
 </body>
 </html>

@@ -37,6 +37,21 @@
 
     <h2>Produtos cadastrados</h2>
 
+    <form method="GET">
+        <input
+            type="text"
+            name="busca"
+            placeholder="Pesquisar produto"
+            value="{{ request.args.get('busca', '') }}"
+        >
+
+        <button type="submit">
+            Pesquisar
+        </button>
+    </form>
+
+    <br>
+
     <table border="1">
         <tr>
             <th>ID</th>

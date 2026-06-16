@@ -283,5 +283,47 @@ def relatorio_vendas():
         vendas_total=vendas_total
     )
 
+@app.route('/fechar_caixa')
+def fechar_caixa():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # 📅 VENDAS DO DIA
+    cursor.execute("""
+        SELECT COALESCE(SUM(valor_total), 0)
+        FROM vendas
+        WHERE date(data_venda) = date('now')
+    """)
+    total_dia = cursor.fetchone()[0]
+
+    # 📦 ITENS VENDIDOS HOJE
+    cursor.execute("""
+        SELECT COALESCE(SUM(quantidade), 0)
+        FROM vendas
+        WHERE date(data_venda) = date('now')
+    """)
+    itens_dia = cursor.fetchone()[0]
+
+    # 🛒 PRODUTOS MAIS VENDIDOS HOJE
+    cursor.execute("""
+        SELECT produtos.nome, SUM(vendas.quantidade) as total_qtd
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        WHERE date(vendas.data_venda) = date('now')
+        GROUP BY produtos.nome
+        ORDER BY total_qtd DESC
+        LIMIT 5
+    """)
+    ranking = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "fechar_caixa.html",
+        total_dia=total_dia,
+        itens_dia=itens_dia,
+        ranking=ranking
+    )
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fechar Caixa</title>
+</head>
+<body>
+
+    <h1>Fechamento de Caixa do Dia</h1>
+
+    <hr>
+
+    <h2>Resumo do Dia</h2>
+
+    <p>Total vendido: R$ {{ "%.2f"|format(total_dia) }}</p>
+    <p>Total de itens vendidos: {{ itens_dia }}</p>
+
+    <hr>
+
+    <h2>Produtos mais vendidos</h2>
+
+    {% if ranking and ranking|length > 0 %}
+        <ul>
+            {% for item in ranking %}
+                <li>{{ item[0] }} - {{ item[1] }} unidades</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhuma venda hoje.</p>
+    {% endif %}
+
+    <hr>
+
+    <a href="/vendas">Voltar para vendas</a>
+
+</body>
+</html>

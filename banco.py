@@ -3,7 +3,7 @@ import sqlite3
 conn = sqlite3.connect('cantina2.db')
 cursor = conn.cursor()
 
-# Produtos
+# ---------------- PRODUTOS ----------------
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS produtos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,7 +13,15 @@ CREATE TABLE IF NOT EXISTS produtos (
 )
 ''')
 
-# Vendas
+# ---------------- FUNCIONÁRIOS ----------------
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS funcionarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL UNIQUE
+)
+''')
+
+# ---------------- VENDAS (SÓ CRIA UMA VEZ) ----------------
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS vendas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +29,8 @@ CREATE TABLE IF NOT EXISTS vendas (
     quantidade INTEGER,
     valor_total REAL,
     data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    tipo_venda TEXT DEFAULT 'NORMAL',
+    funcionario_nome TEXT,
     FOREIGN KEY (produto_id) REFERENCES produtos(id)
 )
 ''')
@@ -28,4 +38,4 @@ CREATE TABLE IF NOT EXISTS vendas (
 conn.commit()
 conn.close()
 
-print("Banco criado com sucesso!")
+print("Banco criado/verificado com sucesso!")

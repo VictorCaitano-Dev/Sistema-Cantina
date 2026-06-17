@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Extrato Fiado</title>
+</head>
+<body>
+
+    <h1> Extrato de {{ nome }}</h1>
+
+    <hr>
+
+    <h2>Total em aberto: R$ {{ "%.2f"|format(total) }}</h2>
+
+    <hr>
+
+    <h3> Histórico de compras fiado</h3>
+
+    {% if compras and compras|length > 0 %}
+
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Valor</th>
+                <th>Data e Hora</th>
+            </tr>
+
+            {% for c in compras %}
+            <tr>
+                <td>{{ c[0] }}</td>
+                <td>{{ c[1] }}</td>
+                <td>R$ {{ "%.2f"|format(c[2]) }}</td>
+                <td>{{ c[3] }}</td>
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    {% else %}
+        <p>Esse funcionário não possui compras fiado.</p>
+    {% endif %}
+
+    <br><br>
+
+    <a href="/funcionarios">⬅ Voltar para Funcionários</a>
+    <br>
+    <a href="/"> Home</a>
+
+</body>
+</html>

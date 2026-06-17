@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, flash
+from datetime import datetime
 import sqlite3
 import os
 
@@ -144,14 +145,19 @@ def vendas():
     conn = conectar()
     cursor = conn.cursor()
 
-    # ---------------- POST (REGISTRAR VENDA) ----------------
+    # ---------------- POST ----------------
     if request.method == 'POST':
-        try:
-            produto_id = int(request.form['produto_id'])
-            quantidade = int(request.form['quantidade'])
-        except:
+        produto_id = request.form.get('produto_id')
+        quantidade = request.form.get('quantidade')
+        tipo_venda = request.form.get('tipo_venda')
+        funcionario_nome = request.form.get('funcionario_nome')
+
+        if not produto_id or not quantidade:
             flash("Dados inválidos")
             return redirect('/vendas')
+
+        produto_id = int(produto_id)
+        quantidade = int(quantidade)
 
         cursor.execute("""
             SELECT nome, preco, estoque
@@ -172,40 +178,58 @@ def vendas():
             return redirect('/vendas')
 
         if quantidade > estoque:
-            flash(f"Estoque insuficiente (atual: {estoque})")
+            flash("Estoque insuficiente")
             return redirect('/vendas')
 
         total = preco * quantidade
-        novo_estoque = estoque - quantidade
 
-        # registrar venda
+        # 🕒 SQLite controla data automaticamente
         cursor.execute("""
-            INSERT INTO vendas (produto_id, quantidade, valor_total, data_venda)
-            VALUES (?, ?, ?, datetime('now'))
-        """, (produto_id, quantidade, total))
+            INSERT INTO vendas (
+                produto_id,
+                quantidade,
+                valor_total,
+                data_venda,
+                tipo_venda,
+                funcionario_nome
+            )
+            VALUES (?, ?, ?, datetime('now'), ?, ?)
+        """, (
+            produto_id,
+            quantidade,
+            total,
+            tipo_venda,
+            funcionario_nome
+        ))
 
-        # atualizar estoque
         cursor.execute("""
             UPDATE produtos
-            SET estoque = ?
+            SET estoque = estoque - ?
             WHERE id = ?
-        """, (novo_estoque, produto_id))
+        """, (quantidade, produto_id))
 
         conn.commit()
 
-        flash(f"Venda registrada: {quantidade}x {nome} - R$ {total:.2f}")
+        flash(f"Venda registrada: {quantidade}x {nome}")
         return redirect('/vendas')
 
-    # ---------------- GET (CARREGAR DADOS) ----------------
+    # ---------------- GET ----------------
 
     cursor.execute("SELECT id, nome, estoque FROM produtos")
     produtos = cursor.fetchall()
 
     cursor.execute("""
-        SELECT vendas.id, produtos.nome, vendas.quantidade, vendas.valor_total, vendas.data_venda
-        FROM vendas
-        JOIN produtos ON vendas.produto_id = produtos.id
-        ORDER BY vendas.data_venda DESC
+        SELECT 
+            v.id,
+            p.nome,
+            v.quantidade,
+            v.valor_total,
+            v.data_venda,
+            v.tipo_venda,
+            v.funcionario_nome
+        FROM vendas v
+        JOIN produtos p ON v.produto_id = p.id
+        ORDER BY v.data_venda DESC
     """)
     vendas = cursor.fetchall()
 
@@ -218,6 +242,9 @@ def vendas():
     cursor.execute("SELECT COALESCE(SUM(quantidade), 0) FROM vendas")
     total_itens = cursor.fetchone()[0]
 
+    cursor.execute("SELECT id, nome FROM funcionarios")
+    funcionarios = cursor.fetchall()
+
     conn.close()
 
     return render_template(
@@ -226,7 +253,8 @@ def vendas():
         vendas=vendas,
         faturamento_total=faturamento_total,
         total_vendas=total_vendas,
-        total_itens=total_itens
+        total_itens=total_itens,
+        funcionarios=funcionarios
     )
 
 
@@ -324,6 +352,68 @@ def fechar_caixa():
         itens_dia=itens_dia,
         ranking=ranking
     )
+
+@app.route('/fiado_funcionario/<nome>')
+def fiado_funcionario(nome):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            produtos.nome,
+            vendas.quantidade,
+            vendas.valor_total,
+            vendas.data_venda
+        FROM vendas
+        JOIN produtos ON vendas.produto_id = produtos.id
+        WHERE vendas.tipo_venda = 'FIADO'
+        AND vendas.funcionario_nome = ?
+        ORDER BY vendas.data_venda DESC
+    """, (nome,))
+
+    compras = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT COALESCE(SUM(valor_total), 0)
+        FROM vendas
+        WHERE tipo_venda = 'FIADO'
+        AND funcionario_nome = ?
+    """, (nome,))
+
+    total = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "fiado_funcionario.html",
+        nome=nome,
+        compras=compras,
+        total=total
+    )
+
+@app.route('/funcionarios', methods=['GET', 'POST'])
+def funcionarios():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        nome = request.form['nome']
+
+        cursor.execute("""
+            INSERT INTO funcionarios (nome)
+            VALUES (?)
+        """, (nome,))
+
+        conn.commit()
+        flash("Funcionário cadastrado com sucesso!")
+        return redirect('/funcionarios')
+
+    cursor.execute("SELECT * FROM funcionarios")
+    lista = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("funcionarios.html", funcionarios=lista)
 
 if __name__ == '__main__':
     app.run(debug=True)

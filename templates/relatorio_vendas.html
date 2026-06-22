@@ -1,53 +1,60 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Relatório de Vendas</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1> Relatório de Vendas</h1>
+{% block titulo %}Relatório de Vendas{% endblock %}
 
-    <hr>
+{% block conteudo %}
 
-    <h2> Resumo do Dia</h2>
-    <p><strong>Total vendido hoje:</strong> R$ {{ "%.2f"|format(vendas_dia_total) }}</p>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Resumo do dia</h2>
+        <div class="indicador">
+            <div class="indicador-valor">R$ {{ "%.2f"|format(vendas_dia_total) }}</div>
+            <div class="indicador-rotulo">Total vendido hoje</div>
+        </div>
 
-    <h3> Produtos vendidos hoje</h3>
+        <h3 style="margin-top: 20px;">Produtos vendidos hoje</h3>
 
-    {% if produtos_dia and produtos_dia|length > 0 %}
+        {% if produtos_dia and produtos_dia|length > 0 %}
+        <div class="tabela-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Total (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos_dia %}
+                    <tr>
+                        <td>{{ produto[0] }}</td>
+                        <td>{{ produto[1] }}</td>
+                        <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>Nenhuma venda hoje.</p>
+        {% endif %}
+    </div>
 
-        <table border="1" cellpadding="5">
-            <tr>
-                <th>Produto</th>
-                <th>Quantidade</th>
-                <th>Total (R$)</th>
-            </tr>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Visão geral</h2>
+        <div class="indicadores">
+            <div class="indicador">
+                <div class="indicador-valor">R$ {{ "%.2f"|format(vendas_mes) }}</div>
+                <div class="indicador-rotulo">Total do mês</div>
+            </div>
+            <div class="indicador">
+                <div class="indicador-valor">R$ {{ "%.2f"|format(vendas_total) }}</div>
+                <div class="indicador-rotulo">Total geral</div>
+            </div>
+        </div>
+    </div>
 
-            {% for produto in produtos_dia %}
-            <tr>
-                <td>{{ produto[0] }}</td>
-                <td>{{ produto[1] }}</td>
-                <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
-            </tr>
-            {% endfor %}
+    <div class="links-rodape-pagina">
+        <a href="/vendas">⬅ Voltar</a>
+    </div>
 
-        </table>
-
-    {% else %}
-        <p>Nenhuma venda hoje.</p>
-    {% endif %}
-
-    <hr>
-
-    <h2> Este mês</h2>
-    <p>R$ {{ "%.2f"|format(vendas_mes) }}</p>
-
-    <h2> Total geral</h2>
-    <p>R$ {{ "%.2f"|format(vendas_total) }}</p>
-
-    <br>
-
-    <a href="/vendas">⬅ Voltar</a>
-
-</body>
-</html>
+{% endblock %}

@@ -1,50 +1,52 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Extrato Fiado</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1> Extrato de {{ nome }}</h1>
+{% block titulo %}Extrato Fiado{% endblock %}
 
-    <hr>
+{% block conteudo %}
 
-    <h2>Total em aberto: R$ {{ "%.2f"|format(total) }}</h2>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Extrato de {{ nome }}</h2>
 
-    <hr>
+        <div class="indicador">
+            <div class="indicador-valor">R$ {{ "%.2f"|format(total) }}</div>
+            <div class="indicador-rotulo">Total em aberto</div>
+        </div>
+    </div>
 
-    <h3> Histórico de compras fiado</h3>
+    <div class="cartao">
+        <h3 class="cartao-titulo">Histórico de compras fiado</h3>
 
-    {% if compras and compras|length > 0 %}
+        {% if compras and compras|length > 0 %}
+        <div class="tabela-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th>Data e Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in compras %}
+                    <tr>
+                        <td>{{ c[0] }}</td>
+                        <td>{{ c[1] }}</td>
+                        <td>R$ {{ "%.2f"|format(c[2]) }}</td>
+                        <td>{{ c[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>Esse funcionário não possui compras fiado.</p>
+        {% endif %}
+    </div>
 
-        <table border="1" cellpadding="8">
-            <tr>
-                <th>Produto</th>
-                <th>Quantidade</th>
-                <th>Valor</th>
-                <th>Data e Hora</th>
-            </tr>
+    <div class="links-rodape-pagina">
+        <a href="/funcionarios">⬅ Voltar para Funcionários</a>
+        <a href="/">Início</a>
+    </div>
 
-            {% for c in compras %}
-            <tr>
-                <td>{{ c[0] }}</td>
-                <td>{{ c[1] }}</td>
-                <td>R$ {{ "%.2f"|format(c[2]) }}</td>
-                <td>{{ c[3] }}</td>
-            </tr>
-            {% endfor %}
-
-        </table>
-
-    {% else %}
-        <p>Esse funcionário não possui compras fiado.</p>
-    {% endif %}
-
-    <br><br>
-
-    <a href="/funcionarios">⬅ Voltar para Funcionários</a>
-    <br>
-    <a href="/"> Home</a>
-
-</body>
-</html>
+{% endblock %}

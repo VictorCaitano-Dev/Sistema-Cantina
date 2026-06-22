@@ -1,0 +1,399 @@
+/* ===================================================================
+   SISTEMA DA CANTINA — CULTURA INGLESA
+   ===================================================================
+   Este arquivo está organizado em blocos, na ordem em que aparecem
+   na página: Variáveis de cor > Base > Cabeçalho > Menu > Conteúdo >
+   Cartões > Formulários > Botões > Tabelas > Mensagens > Rodapé >
+   Responsivo.
+
+   Paleta: inspirada na identidade visual da Cultura Inglesa
+   (vermelho institucional + azul-marinho). Se você tiver o manual de
+   marca oficial com os códigos hexadecimais exatos, é só trocar os
+   valores aqui embaixo, em "Variáveis de cor", que o site todo
+   atualiza sozinho.
+   =================================================================== */
+
+
+/* -------------------------------------------------------------------
+   1. VARIÁVEIS DE COR
+   ------------------------------------------------------------------- */
+:root {
+    --vermelho-principal: #C8102E;   /* vermelho institucional */
+    --vermelho-escuro:    #960C22;   /* usado em hover/detalhes */
+    --azul-marinho:       #14213D;   /* cor secundária da marca */
+    --branco:             #FFFFFF;
+
+    --cinza-fundo:        #F4F4F6;   /* fundo geral da página */
+    --cinza-borda:        #DCDCE2;   /* bordas e divisórias */
+    --cinza-claro:        #F0F0F2;   /* fundo de linhas/zebra */
+
+    --texto-principal:    #232327;
+    --texto-secundario:   #6B6B72;
+
+    --sucesso:            #2E7D32;
+    --alerta:             #B8860B;
+
+    --sombra: 0 2px 8px rgba(20, 33, 61, 0.08);
+    --raio:   8px;
+}
+
+
+/* -------------------------------------------------------------------
+   2. BASE — reset simples e tipografia
+   ------------------------------------------------------------------- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    background-color: var(--cinza-fundo);
+    color: var(--texto-principal);
+    line-height: 1.5;
+}
+
+h1, h2, h3 {
+    color: var(--azul-marinho);
+    margin-top: 0;
+}
+
+a {
+    color: var(--vermelho-principal);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--cinza-borda);
+    margin: 24px 0;
+}
+
+
+/* -------------------------------------------------------------------
+   3. CABEÇALHO — logo + nome do sistema
+   ------------------------------------------------------------------- */
+.cabecalho {
+    background-color: var(--azul-marinho);
+    color: var(--branco);
+    padding: 16px 24px 0;
+}
+
+.cabecalho-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 48px;
+    width: auto;
+    display: block;
+}
+
+.logo-texto-fallback {
+    color: var(--branco);
+    font-weight: bold;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+}
+
+.titulo-sistema {
+    color: var(--branco);
+    font-size: 1.3rem;
+    margin: 0;
+    border-left: 2px solid var(--vermelho-principal);
+    padding-left: 16px;
+}
+
+
+/* -------------------------------------------------------------------
+   4. MENU PRINCIPAL
+   ------------------------------------------------------------------- */
+.menu-principal {
+    max-width: 1100px;
+    margin: 12px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.menu-principal a {
+    color: var(--branco);
+    padding: 10px 18px;
+    border-radius: var(--raio) var(--raio) 0 0;
+    font-weight: 500;
+}
+
+.menu-principal a:hover {
+    background-color: var(--vermelho-principal);
+    text-decoration: none;
+}
+
+
+/* -------------------------------------------------------------------
+   5. CONTEÚDO — área principal de cada página
+   ------------------------------------------------------------------- */
+.conteudo {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 24px;
+}
+
+/* Cada seção da página (dashboard, formulário, tabela) fica dentro
+   de um "cartão" branco, para separar visualmente o conteúdo. */
+.cartao {
+    background-color: var(--branco);
+    border: 1px solid var(--cinza-borda);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.cartao-titulo {
+    border-bottom: 2px solid var(--cinza-borda);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+/* Linha com vários indicadores lado a lado (ex.: dashboard) */
+.indicadores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.indicador {
+    flex: 1;
+    min-width: 180px;
+    background-color: var(--cinza-claro);
+    border-left: 4px solid var(--vermelho-principal);
+    border-radius: var(--raio);
+    padding: 16px;
+}
+
+.indicador-valor {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--azul-marinho);
+}
+
+.indicador-rotulo {
+    color: var(--texto-secundario);
+    font-size: 0.9rem;
+}
+
+.lista-simples {
+    padding-left: 20px;
+}
+
+.lista-simples li {
+    margin-bottom: 6px;
+}
+
+.aviso-estoque-baixo {
+    color: var(--alerta);
+    font-weight: bold;
+}
+
+/* Links de navegação dentro do conteúdo (ex.: "Voltar") */
+.links-rodape-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+
+/* -------------------------------------------------------------------
+   6. FORMULÁRIOS
+   ------------------------------------------------------------------- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 480px;
+}
+
+form.form-linha {
+    flex-direction: row;
+    align-items: center;
+    max-width: none;
+    flex-wrap: wrap;
+}
+
+label {
+    font-weight: 600;
+    color: var(--azul-marinho);
+    margin-bottom: 4px;
+    display: block;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--cinza-borda);
+    border-radius: var(--raio);
+    font-size: 1rem;
+    background-color: var(--branco);
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--vermelho-principal);
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.15);
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* -------------------------------------------------------------------
+   7. BOTÕES E LINKS DE AÇÃO
+   ------------------------------------------------------------------- */
+button,
+.botao {
+    background-color: var(--vermelho-principal);
+    color: var(--branco);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--raio);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background-color 0.15s ease-in-out;
+}
+
+button:hover,
+.botao:hover {
+    background-color: var(--vermelho-escuro);
+    text-decoration: none;
+}
+
+.botao-secundario {
+    background-color: var(--azul-marinho);
+}
+
+.botao-secundario:hover {
+    background-color: #0c1729;
+}
+
+.acao-excluir {
+    color: var(--vermelho-principal);
+    font-weight: 600;
+}
+
+
+/* -------------------------------------------------------------------
+   8. TABELAS
+   ------------------------------------------------------------------- */
+.tabela-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--cinza-borda);
+}
+
+th {
+    background-color: var(--azul-marinho);
+    color: var(--branco);
+    font-weight: 600;
+}
+
+tbody tr:nth-child(even) {
+    background-color: var(--cinza-claro);
+}
+
+tbody tr:hover {
+    background-color: #FBEAEC;
+}
+
+td .acoes {
+    display: flex;
+    gap: 10px;
+}
+
+
+/* -------------------------------------------------------------------
+   9. MENSAGENS (flash messages do Flask)
+   ------------------------------------------------------------------- */
+.caixa-mensagens {
+    margin-bottom: 20px;
+}
+
+.mensagem-flash {
+    background-color: #FDECEA;
+    border-left: 4px solid var(--vermelho-principal);
+    color: var(--vermelho-escuro);
+    padding: 12px 16px;
+    border-radius: var(--raio);
+    margin: 0 0 8px;
+}
+
+
+/* -------------------------------------------------------------------
+   10. RODAPÉ
+   ------------------------------------------------------------------- */
+.rodape {
+    text-align: center;
+    color: var(--texto-secundario);
+    font-size: 0.85rem;
+    padding: 20px;
+}
+
+
+/* -------------------------------------------------------------------
+   11. RESPONSIVO — telas menores (celular/tablet)
+   ------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .cabecalho-conteudo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .titulo-sistema {
+        border-left: none;
+        padding-left: 0;
+    }
+
+    .menu-principal {
+        flex-direction: column;
+    }
+
+    .indicadores {
+        flex-direction: column;
+    }
+
+    form.form-linha {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

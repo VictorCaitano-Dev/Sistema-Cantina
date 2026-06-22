@@ -1,0 +1,15 @@
+Coloque aqui o arquivo da logo mais recente da Cultura Inglesa, com o nome:
+
+    logo-cultura-inglesa.png
+
+(pode ser .png ou .svg — se usar .svg, troque a extensão no arquivo
+templates/base.html, na linha do <img src="...">)
+
+Não incluí a logo automaticamente porque é uma marca registrada da
+Cultura Inglesa: o ideal é usar o arquivo oficial que sua unidade
+já tem (com o setor de marketing/comunicação), garantindo que é a
+versão correta e atualizada.
+
+Se o arquivo não existir, o sistema mostra o texto "Cultura Inglesa"
+no lugar da imagem, então nada quebra enquanto você não adicionar o
+arquivo.

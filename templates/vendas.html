@@ -1,127 +1,141 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Vendas</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>Vendas</h1>
+{% block titulo %}Vendas{% endblock %}
 
-{% with mensagens = get_flashed_messages() %}
-    {% for m in mensagens %}
-        <p><b>{{ m }}</b></p>
-    {% endfor %}
-{% endwith %}
+{% block conteudo %}
 
-<h2>📊 Indicadores</h2>
-<p>💰 Faturamento: R$ {{ "%.2f"|format(faturamento_total) }}</p>
-<p>🛒 Vendas: {{ total_vendas }}</p>
-<p>📦 Itens: {{ total_itens }}</p>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Indicadores</h2>
+        <div class="indicadores">
+            <div class="indicador">
+                <div class="indicador-valor">R$ {{ "%.2f"|format(faturamento_total) }}</div>
+                <div class="indicador-rotulo">Faturamento</div>
+            </div>
+            <div class="indicador">
+                <div class="indicador-valor">{{ total_vendas }}</div>
+                <div class="indicador-rotulo">Vendas</div>
+            </div>
+            <div class="indicador">
+                <div class="indicador-valor">{{ total_itens }}</div>
+                <div class="indicador-rotulo">Itens vendidos</div>
+            </div>
+        </div>
+    </div>
 
-<hr>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Registrar venda</h2>
 
-<h2>Registrar venda</h2>
+        <form method="POST">
+            <div class="campo">
+                <label>Produto:</label>
+                <select name="produto_id" required>
+                    {% for p in produtos %}
+                        <option value="{{ p[0] }}">
+                            {{ p[1] }} (Estoque: {{ p[2] }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-<form method="POST">
+            <div class="campo">
+                <label>Quantidade:</label>
+                <input type="number" name="quantidade" min="1" required>
+            </div>
 
-    <label>Produto:</label>
-    <select name="produto_id" required>
-        {% for p in produtos %}
-            <option value="{{ p[0] }}">
-                {{ p[1] }} (Estoque: {{ p[2] }})
-            </option>
-        {% endfor %}
-    </select>
+            <div class="campo">
+                <label>Tipo de venda:</label>
+                <select name="tipo_venda">
+                    <option value="NORMAL">Normal</option>
+                    <option value="FIADO">Fiado</option>
+                </select>
+            </div>
 
-    <br><br>
+            <div class="campo">
+                <label>Forma de pagamento:</label>
+                <select name="forma_pagamento">
+                    <option value="PIX">PIX</option>
+                    <option value="DINHEIRO">Dinheiro</option>
+                </select>
+            </div>
 
-    <label>Quantidade:</label>
-    <input type="number" name="quantidade" min="1" required>
+            <div class="campo">
+                <label>Valor recebido (apenas dinheiro):</label>
+                <input type="number" step="0.01" name="valor_recebido">
+            </div>
 
-    <br><br>
+            <div class="campo">
+                <label>Funcionário (apenas fiado):</label>
+                <select name="funcionario_nome">
+                    <option value="">nenhum</option>
+                    {% for f in funcionarios %}
+                        <option value="{{ f[1] }}">{{ f[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-    <label>Tipo de venda:</label>
-    <select name="tipo_venda">
-        <option value="NORMAL">Normal</option>
-        <option value="FIADO">Fiado</option>
-    </select>
+            <button type="submit">Registrar venda</button>
+        </form>
+    </div>
 
-    <br><br>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Histórico de vendas</h2>
 
-    <label>Funcionário (apenas para fiado):</label>
-    <select name="funcionario_nome">
-        <option value="">-- nenhum --</option>
+        {% if vendas and vendas|length > 0 %}
+        <div class="tabela-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor Total</th>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Funcionário</th>
+                        <th>Pagamento</th>
+                        <th>Troco</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vendas %}
+                    <tr>
+                        <td>{{ v[0] }}</td>
+                        <td>{{ v[1] }}</td>
+                        <td>{{ v[2] }}</td>
+                        <td>R$ {{ "%.2f"|format(v[3]) }}</td>
+                        <td>{{ v[4] }}</td>
+                        <td>
+                            {% if v[5] == "FIADO" %}
+                                <strong>FIADO</strong>
+                            {% else %}
+                                NORMAL
+                            {% endif %}
+                        </td>
+                        <td>{{ v[6] if v[6] else "-" }}</td>
+                        <td>{{ v[7] if v[7] else "-" }}</td>
+                        <td>
+                            {% if v[8] %}
+                                R$ {{ "%.2f"|format(v[8]) }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>Nenhuma venda registrada ainda.</p>
+        {% endif %}
+    </div>
 
-        {% for f in funcionarios %}
-            <option value="{{ f[1] }}">
-                {{ f[1] }}
-            </option>
-        {% endfor %}
-    </select>
+    <div class="links-rodape-pagina">
+        <a href="/produtos">Produtos</a>
+        <a href="/funcionarios">Funcionários</a>
+        <a href="/relatorio_vendas">Relatório de Vendas</a>
+        <a href="/fechar_caixa">Fechar Caixa</a>
+        <a href="/">Voltar para o início</a>
+    </div>
 
-    <br><br>
-
-    <button type="submit">Registrar venda</button>
-
-</form>
-
-<hr>
-
-<h2>Histórico de vendas</h2>
-
-{% if vendas and vendas|length > 0 %}
-
-<table border="1" cellpadding="5">
-
-    <tr>
-        <th>ID</th>
-        <th>Produto</th>
-        <th>Quantidade</th>
-        <th>Valor Total</th>
-        <th>Data</th>
-        <th>Tipo</th>
-        <th>Funcionário</th>
-    </tr>
-
-    {% for v in vendas %}
-    <tr>
-        <td>{{ v[0] }}</td>
-        <td>{{ v[1] }}</td>
-        <td>{{ v[2] }}</td>
-        <td>R$ {{ "%.2f"|format(v[3]) }}</td>
-        <td>{{ v[4] }}</td>
-        <td>{{ v[5] }}</td>
-        <td>{{ v[6] if v[6] else "-" }}</td>
-    </tr>
-    {% endfor %}
-
-</table>
-
-{% else %}
-
-<p>Nenhuma venda registrada ainda.</p>
-
-{% endif %}
-
-<br>
-
-<a href="/produtos">Produtos</a>
-
-<br><br>
-
-<a href="/funcionarios">Funcionários</a>
-
-<br><br>
-
-<a href="/relatorio_vendas">Relatório de Vendas</a>
-
-<br><br>
-
-<a href="/fechar_caixa">Fechar Caixa</a>
-
-<br><br>
-
-<a href="/">Voltar para Home</a>
-
-</body>
-</html>
+{% endblock %}

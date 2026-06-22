@@ -1,53 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Funcionários</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1> Funcionários</h1>
+{% block titulo %}Funcionários{% endblock %}
 
-    {% with mensagens = get_flashed_messages() %}
-        {% if mensagens %}
-            {% for mensagem in mensagens %}
-                <p><strong>{{ mensagem }}</strong></p>
-            {% endfor %}
+{% block conteudo %}
+
+    <div class="cartao">
+        <h2 class="cartao-titulo">Cadastrar funcionário</h2>
+
+        <form method="POST">
+            <div class="campo">
+                <label>Nome:</label>
+                <input type="text" name="nome" required>
+            </div>
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
+
+    <div class="cartao">
+        <h2 class="cartao-titulo">Lista de funcionários</h2>
+
+        {% if funcionarios and funcionarios|length > 0 %}
+            <ul class="lista-simples">
+                {% for f in funcionarios %}
+                    <li>
+                        {{ f[1] }}
+                        &middot;
+                        <a href="/fiado_funcionario/{{ f[1] }}">Ver extrato de fiado</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhum funcionário cadastrado.</p>
         {% endif %}
-    {% endwith %}
+    </div>
 
-    <h2>Cadastrar funcionário</h2>
+    <div class="links-rodape-pagina">
+        <a href="/">Voltar</a>
+    </div>
 
-    <form method="POST">
-        <label>Nome:</label>
-        <input type="text" name="nome" required>
-        <button type="submit">Cadastrar</button>
-    </form>
-
-    <hr>
-
-    <h2>Lista de funcionários</h2>
-
-    {% if funcionarios and funcionarios|length > 0 %}
-
-        <ul>
-            {% for f in funcionarios %}
-                <li>
-                     {{ f[1] }}
-                    |
-                    <a href="/fiado_funcionario/{{ f[1] }}">
-                        Ver extrato de fiado
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-
-    {% else %}
-        <p>Nenhum funcionário cadastrado.</p>
-    {% endif %}
-
-    <br><br>
-
-    <a href="/">Voltar</a>
-
-</body>
-</html>
+{% endblock %}

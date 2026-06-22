@@ -1,59 +1,64 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sistema da Cantina</title>
-</head>
-<body>
-    <h1>Sistema da Cantina</h1>
+{% extends "base.html" %}
 
-    <h2>Dashboard</h2>
+{% block titulo %}Início{% endblock %}
 
-    <p>Total de produtos: {{ total_produtos }}</p>
+{% block conteudo %}
 
-    <p>Total de vendas: {{ total_vendas }}</p>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Dashboard</h2>
 
-    <p>Faturamento total: R$ {{ "%.2f"|format(faturamento) }}</p>
-    {% if produto_mais_vendido %}
-    <p>
-        Produto mais vendido:
-        {{ produto_mais_vendido[0] }}
-        ({{ produto_mais_vendido[1] }} unidades)
-    </p>
-{% else %}
-    <p>Produto mais vendido: Nenhuma venda registrada.</p>
-{% endif %}
+        <div class="indicadores">
+            <div class="indicador">
+                <div class="indicador-valor">{{ total_produtos }}</div>
+                <div class="indicador-rotulo">Produtos cadastrados</div>
+            </div>
 
-    <h3>Produtos com estoque baixo</h3>
+            <div class="indicador">
+                <div class="indicador-valor">{{ total_vendas }}</div>
+                <div class="indicador-rotulo">Vendas registradas</div>
+            </div>
 
-{% if estoque_baixo %}
-    <ul>
-        {% for produto in estoque_baixo %}
-            <li>{{ produto[0] }} - {{ produto[1] }} unidades</li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Nenhum produto com estoque baixo.</p>
-{% endif %}
+            <div class="indicador">
+                <div class="indicador-valor">R$ {{ "%.2f"|format(faturamento) }}</div>
+                <div class="indicador-rotulo">Faturamento total</div>
+            </div>
+        </div>
 
-    <hr>
+        <hr>
 
-    <a href="/produtos">Produtos</a>
+        {% if produto_mais_vendido %}
+            <p>
+                <strong>Produto mais vendido:</strong>
+                {{ produto_mais_vendido[0] }}
+                ({{ produto_mais_vendido[1] }} unidades)
+            </p>
+        {% else %}
+            <p>Produto mais vendido: nenhuma venda registrada.</p>
+        {% endif %}
+    </div>
 
-    <br><br>
+    <div class="cartao">
+        <h3 class="cartao-titulo">Produtos com estoque baixo</h3>
 
-    <a href="/vendas">Vendas</a>
+        {% if estoque_baixo %}
+            <ul class="lista-simples">
+                {% for produto in estoque_baixo %}
+                    <li class="aviso-estoque-baixo">{{ produto[0] }} — {{ produto[1] }} unidades</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhum produto com estoque baixo.</p>
+        {% endif %}
+    </div>
 
-    <br><br>
+    <div class="cartao">
+        <h3 class="cartao-titulo">Acesso rápido</h3>
+        <div class="links-rodape-pagina">
+            <a class="botao" href="/produtos">Produtos</a>
+            <a class="botao" href="/vendas">Vendas</a>
+            <a class="botao" href="/relatorio_vendas">Relatório de Vendas</a>
+            <a class="botao" href="/funcionarios">Funcionários/Dívidas</a>
+        </div>
+    </div>
 
-    <a href="/relatorio_vendas">
-        Relatório de Vendas
-    </a>
-
-    <br><br>
-
-    <a href="/funcionarios">
-        Funcionários/Dívidas
-    </a>
-
-</body>
-</html>
+{% endblock %}

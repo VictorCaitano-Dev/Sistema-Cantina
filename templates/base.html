@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Cantina{% endblock %} | Cultura Inglesa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho-conteudo">
+            <a href="/" class="logo-area">
+                <!--
+                    Coloque o arquivo da logo mais recente da Cultura Inglesa
+                    em static/img/logo-cultura-inglesa.png
+                    (baixe a versão oficial com a unidade de marketing/comunicação
+                    da sua franquia, para garantir que é o arquivo correto).
+                -->
+                <img src="{{ url_for('static', filename='img/logo-cultura-inglesa.png') }}"
+                     alt="Cultura Inglesa"
+                     class="logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <span class="logo-texto-fallback" style="display:none;">Cultura Inglesa</span>
+            </a>
+            <h1 class="titulo-sistema">Sistema da Cantina</h1>
+        </div>
+
+        <nav class="menu-principal">
+            <a href="/">Início</a>
+            <a href="/produtos">Produtos</a>
+            <a href="/vendas">Vendas</a>
+            <a href="/relatorio_vendas">Relatório</a>
+            <a href="/funcionarios">Funcionários</a>
+        </nav>
+    </header>
+
+    <main class="conteudo">
+        {% with mensagens = get_flashed_messages() %}
+            {% if mensagens %}
+                <div class="caixa-mensagens">
+                    {% for mensagem in mensagens %}
+                        <p class="mensagem-flash">{{ mensagem }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block conteudo %}{% endblock %}
+    </main>
+
+    <footer class="rodape">
+        <p>Cultura Inglesa &middot; Sistema interno da Cantina</p>
+    </footer>
+
+</body>
+</html>

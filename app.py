@@ -147,10 +147,15 @@ def vendas():
 
     # ---------------- POST ----------------
     if request.method == 'POST':
+
         produto_id = request.form.get('produto_id')
         quantidade = request.form.get('quantidade')
+
         tipo_venda = request.form.get('tipo_venda')
         funcionario_nome = request.form.get('funcionario_nome')
+
+        forma_pagamento = request.form.get('forma_pagamento')
+        valor_recebido = request.form.get('valor_recebido')
 
         if not produto_id or not quantidade:
             flash("Dados inválidos")
@@ -181,9 +186,45 @@ def vendas():
             flash("Estoque insuficiente")
             return redirect('/vendas')
 
+        # valida funcionário no fiado
+        if tipo_venda == "FIADO" and not funcionario_nome:
+            flash("Selecione um funcionário para venda fiado")
+            return redirect('/vendas')
+
         total = preco * quantidade
 
-        # 🕒 SQLite controla data automaticamente
+        troco = None
+
+        # venda normal
+        if tipo_venda == "NORMAL":
+
+            if not forma_pagamento:
+                flash("Selecione a forma de pagamento")
+                return redirect('/vendas')
+
+            if forma_pagamento == "DINHEIRO":
+
+                if not valor_recebido:
+                    flash("Informe o valor recebido")
+                    return redirect('/vendas')
+
+                valor_recebido = float(valor_recebido)
+
+                if valor_recebido < total:
+                    flash("Valor recebido menor que o total da venda")
+                    return redirect('/vendas')
+
+                troco = valor_recebido - total
+
+            else:
+                valor_recebido = None
+
+        else:
+            # fiado
+            forma_pagamento = None
+            valor_recebido = None
+
+        # registrar venda
         cursor.execute("""
             INSERT INTO vendas (
                 produto_id,
@@ -191,17 +232,24 @@ def vendas():
                 valor_total,
                 data_venda,
                 tipo_venda,
-                funcionario_nome
+                funcionario_nome,
+                forma_pagamento,
+                valor_recebido,
+                troco
             )
-            VALUES (?, ?, ?, datetime('now'), ?, ?)
+            VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?)
         """, (
             produto_id,
             quantidade,
             total,
             tipo_venda,
-            funcionario_nome
+            funcionario_nome,
+            forma_pagamento,
+            valor_recebido,
+            troco
         ))
 
+        # atualizar estoque
         cursor.execute("""
             UPDATE produtos
             SET estoque = estoque - ?
@@ -210,39 +258,66 @@ def vendas():
 
         conn.commit()
 
-        flash(f"Venda registrada: {quantidade}x {nome}")
+        if troco is not None:
+            flash(
+                f"Venda registrada: {quantidade}x {nome} | Troco: R$ {troco:.2f}"
+            )
+        else:
+            flash(
+                f"Venda registrada: {quantidade}x {nome}"
+            )
+
         return redirect('/vendas')
 
     # ---------------- GET ----------------
 
-    cursor.execute("SELECT id, nome, estoque FROM produtos")
+    cursor.execute("""
+        SELECT id, nome, estoque
+        FROM produtos
+    """)
     produtos = cursor.fetchall()
 
     cursor.execute("""
-        SELECT 
+        SELECT
             v.id,
             p.nome,
             v.quantidade,
             v.valor_total,
             v.data_venda,
             v.tipo_venda,
-            v.funcionario_nome
+            v.funcionario_nome,
+            v.forma_pagamento,
+            v.troco
         FROM vendas v
-        JOIN produtos p ON v.produto_id = p.id
+        JOIN produtos p
+            ON v.produto_id = p.id
         ORDER BY v.data_venda DESC
     """)
     vendas = cursor.fetchall()
 
-    cursor.execute("SELECT COALESCE(SUM(valor_total), 0) FROM vendas")
+    cursor.execute("""
+        SELECT COALESCE(SUM(valor_total), 0)
+        FROM vendas
+    """)
     faturamento_total = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM vendas")
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM vendas
+    """)
     total_vendas = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COALESCE(SUM(quantidade), 0) FROM vendas")
+    cursor.execute("""
+        SELECT COALESCE(SUM(quantidade), 0)
+        FROM vendas
+    """)
     total_itens = cursor.fetchone()[0]
 
-    cursor.execute("SELECT id, nome FROM funcionarios")
+    cursor.execute("""
+        SELECT id, nome
+        FROM funcionarios
+        ORDER BY nome
+    """)
     funcionarios = cursor.fetchall()
 
     conn.close()
@@ -272,7 +347,7 @@ def relatorio_vendas():
     """)
     vendas_dia_total = cursor.fetchone()[0]
 
-    # 📦 PRODUTOS VENDIDOS NO DIA
+    #  PRODUTOS VENDIDOS NO DIA
     cursor.execute("""
         SELECT 
             produtos.nome,
@@ -286,7 +361,7 @@ def relatorio_vendas():
     """)
     produtos_dia = cursor.fetchall()
 
-    # 📅 TOTAL DO MÊS
+    #  TOTAL DO MÊS
     cursor.execute("""
         SELECT COALESCE(SUM(valor_total), 0)
         FROM vendas
@@ -294,7 +369,7 @@ def relatorio_vendas():
     """)
     vendas_mes = cursor.fetchone()[0]
 
-    # 💰 TOTAL GERAL
+    #  TOTAL GERAL
     cursor.execute("""
         SELECT COALESCE(SUM(valor_total), 0)
         FROM vendas
@@ -316,7 +391,7 @@ def fechar_caixa():
     conn = conectar()
     cursor = conn.cursor()
 
-    # 📅 VENDAS DO DIA
+    #  VENDAS DO DIA
     cursor.execute("""
         SELECT COALESCE(SUM(valor_total), 0)
         FROM vendas
@@ -324,7 +399,7 @@ def fechar_caixa():
     """)
     total_dia = cursor.fetchone()[0]
 
-    # 📦 ITENS VENDIDOS HOJE
+    #  ITENS VENDIDOS HOJE
     cursor.execute("""
         SELECT COALESCE(SUM(quantidade), 0)
         FROM vendas
@@ -332,7 +407,7 @@ def fechar_caixa():
     """)
     itens_dia = cursor.fetchone()[0]
 
-    # 🛒 PRODUTOS MAIS VENDIDOS HOJE
+    #  PRODUTOS MAIS VENDIDOS HOJE
     cursor.execute("""
         SELECT produtos.nome, SUM(vendas.quantidade) as total_qtd
         FROM vendas

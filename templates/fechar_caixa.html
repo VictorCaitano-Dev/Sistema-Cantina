@@ -1,36 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Fechar Caixa</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1>Fechamento de Caixa do Dia</h1>
+{% block titulo %}Fechar Caixa{% endblock %}
 
-    <hr>
+{% block conteudo %}
 
-    <h2>Resumo do Dia</h2>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Resumo do dia</h2>
+        <div class="indicadores">
+            <div class="indicador">
+                <div class="indicador-valor">R$ {{ "%.2f"|format(total_dia) }}</div>
+                <div class="indicador-rotulo">Total vendido</div>
+            </div>
+            <div class="indicador">
+                <div class="indicador-valor">{{ itens_dia }}</div>
+                <div class="indicador-rotulo">Itens vendidos</div>
+            </div>
+        </div>
+    </div>
 
-    <p>Total vendido: R$ {{ "%.2f"|format(total_dia) }}</p>
-    <p>Total de itens vendidos: {{ itens_dia }}</p>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Produtos mais vendidos</h2>
 
-    <hr>
+        {% if ranking and ranking|length > 0 %}
+            <ul class="lista-simples">
+                {% for item in ranking %}
+                    <li>{{ item[0] }} — {{ item[1] }} unidades</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhuma venda hoje.</p>
+        {% endif %}
+    </div>
 
-    <h2>Produtos mais vendidos</h2>
+    <div class="links-rodape-pagina">
+        <a href="/vendas">Voltar para vendas</a>
+    </div>
 
-    {% if ranking and ranking|length > 0 %}
-        <ul>
-            {% for item in ranking %}
-                <li>{{ item[0] }} - {{ item[1] }} unidades</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Nenhuma venda hoje.</p>
-    {% endif %}
-
-    <hr>
-
-    <a href="/vendas">Voltar para vendas</a>
-
-</body>
-</html>
+{% endblock %}

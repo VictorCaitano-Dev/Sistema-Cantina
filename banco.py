@@ -35,6 +35,31 @@ CREATE TABLE IF NOT EXISTS vendas (
 )
 ''')
 
+# ---------------- NOVAS COLUNAS DE PAGAMENTO ----------------
+
+try:
+    cursor.execute("""
+        ALTER TABLE vendas
+        ADD COLUMN forma_pagamento TEXT
+    """)
+except:
+    pass
+
+try:
+    cursor.execute("""
+        ALTER TABLE vendas
+        ADD COLUMN valor_recebido REAL
+    """)
+except:
+    pass
+
+try:
+    cursor.execute("""
+        ALTER TABLE vendas
+        ADD COLUMN troco REAL
+    """)
+except:
+    pass
 conn.commit()
 conn.close()
 

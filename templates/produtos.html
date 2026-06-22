@@ -1,85 +1,79 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Produtos</title>
-</head>
-<body>
-    <h1>Produtos</h1>
+{% extends "base.html" %}
 
-    {% with mensagens = get_flashed_messages() %}
-        {% if mensagens %}
-            {% for mensagem in mensagens %}
-                <p><strong>{{ mensagem }}</strong></p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+{% block titulo %}Produtos{% endblock %}
 
-    <h2>Cadastrar produto</h2>
+{% block conteudo %}
 
-    <form method="POST">
-        <label>Nome:</label>
-        <input type="text" name="nome" required>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Cadastrar produto</h2>
 
-        <br><br>
+        <form method="POST">
+            <div class="campo">
+                <label>Nome:</label>
+                <input type="text" name="nome" required>
+            </div>
 
-        <label>Preço:</label>
-        <input type="number" step="0.01" min="0.01" name="preco" required>
+            <div class="campo">
+                <label>Preço:</label>
+                <input type="number" step="0.01" min="0.01" name="preco" required>
+            </div>
 
-        <br><br>
+            <div class="campo">
+                <label>Estoque:</label>
+                <input type="number" min="0" name="estoque" required>
+            </div>
 
-        <label>Estoque:</label>
-        <input type="number" min="0" name="estoque" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
 
-        <br><br>
+    <div class="cartao">
+        <h2 class="cartao-titulo">Produtos cadastrados</h2>
 
-        <button type="submit">Cadastrar</button>
-    </form>
+        <form method="GET" class="form-linha">
+            <input
+                type="text"
+                name="busca"
+                placeholder="Pesquisar produto"
+                value="{{ request.args.get('busca', '') }}"
+            >
+            <button type="submit">Pesquisar</button>
+        </form>
 
-    <h2>Produtos cadastrados</h2>
+        <div class="tabela-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Estoque</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr>
+                        <td>{{ produto[0] }}</td>
+                        <td>{{ produto[1] }}</td>
+                        <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
+                        <td>{{ produto[3] }}</td>
+                        <td>
+                            <div class="acoes">
+                                <a href="/editar_produto/{{ produto[0] }}">Editar</a>
+                                <a class="acao-excluir" href="/excluir_produto/{{ produto[0] }}">Excluir</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    <form method="GET">
-        <input
-            type="text"
-            name="busca"
-            placeholder="Pesquisar produto"
-            value="{{ request.args.get('busca', '') }}"
-        >
+    <div class="links-rodape-pagina">
+        <a href="/vendas">Vendas</a>
+        <a href="/">Voltar para o início</a>
+    </div>
 
-        <button type="submit">
-            Pesquisar
-        </button>
-    </form>
-
-    <br>
-
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Preço</th>
-            <th>Estoque</th>
-            <th>Ações</th>
-        </tr>
-
-        {% for produto in produtos %}
-        <tr>
-            <td>{{ produto[0] }}</td>
-            <td>{{ produto[1] }}</td>
-            <td>R$ {{ "%.2f"|format(produto[2]) }}</td>
-            <td>{{ produto[3] }}</td>
-            <td>
-                <a href="/editar_produto/{{ produto[0] }}">Editar</a>
-                |
-                <a href="/excluir_produto/{{ produto[0] }}">Excluir</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    <br>
-
-    <a href="/vendas">Vendas</a>
-    <br>
-    <a href="/">Voltar</a>
-</body>
-</html>
+{% endblock %}

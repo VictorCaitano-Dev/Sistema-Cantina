@@ -35,6 +35,18 @@ CREATE TABLE IF NOT EXISTS vendas (
 )
 ''')
 
+# ---------------- CAIXA ----------------
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS caixas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    data_abertura TEXT,
+    data_fechamento TEXT,
+    valor_inicial REAL NOT NULL,
+    valor_vendido REAL DEFAULT 0,
+    status TEXT DEFAULT 'ABERTO'
+)
+""")
+
 # ---------------- NOVAS COLUNAS DE PAGAMENTO ----------------
 
 try:

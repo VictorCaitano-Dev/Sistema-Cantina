@@ -368,6 +368,20 @@ td .acoes {
     padding: 20px;
 }
 
+/* -------------------------------------------------------------------
+   CAIXA
+------------------------------------------------------------------- */
+
+.status-caixa-aberto {
+    color: var(--sucesso);
+    font-weight: bold;
+}
+
+.status-caixa-fechado {
+    color: var(--vermelho-principal);
+    font-weight: bold;
+}
+
 
 /* -------------------------------------------------------------------
    11. RESPONSIVO — telas menores (celular/tablet)

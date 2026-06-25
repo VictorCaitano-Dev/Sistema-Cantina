@@ -1,39 +1,56 @@
 {% extends "base.html" %}
 
-{% block titulo %}Fechar Caixa{% endblock %}
-
 {% block conteudo %}
 
-    <div class="cartao">
-        <h2 class="cartao-titulo">Resumo do dia</h2>
-        <div class="indicadores">
-            <div class="indicador">
-                <div class="indicador-valor">R$ {{ "%.2f"|format(total_dia) }}</div>
-                <div class="indicador-rotulo">Total vendido</div>
-            </div>
-            <div class="indicador">
-                <div class="indicador-valor">{{ itens_dia }}</div>
-                <div class="indicador-rotulo">Itens vendidos</div>
-            </div>
-        </div>
-    </div>
+<h1>Fechamento de Caixa</h1>
 
-    <div class="cartao">
-        <h2 class="cartao-titulo">Produtos mais vendidos</h2>
+<hr>
 
-        {% if ranking and ranking|length > 0 %}
-            <ul class="lista-simples">
-                {% for item in ranking %}
-                    <li>{{ item[0] }} — {{ item[1] }} unidades</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Nenhuma venda hoje.</p>
-        {% endif %}
-    </div>
+{% if caixa %}
 
-    <div class="links-rodape-pagina">
-        <a href="/vendas">Voltar para vendas</a>
-    </div>
+    <h2>Resumo do Dia</h2>
+
+    <p><strong>Total vendido:</strong> R$ {{ "%.2f"|format(total_caixa) }}</p>
+
+    <p><strong>Total de itens vendidos:</strong> {{ itens_dia }}</p>
+
+    <hr>
+
+    <h3>Top produtos do dia</h3>
+
+    {% if ranking %}
+        <ul>
+            {% for item in ranking %}
+                <li>
+                    {{ item[0] }} - {{ item[1] }} unidades
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhuma venda registrada hoje.</p>
+    {% endif %}
+
+    <hr>
+
+    <form method="POST">
+        <button type="submit" style="
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        ">
+            Fechar Caixa
+        </button>
+    </form>
+
+{% else %}
+
+    <h2>Nenhum caixa aberto no momento</h2>
+
+    <p>Abra o caixa para iniciar as operações do dia.</p>
+
+{% endif %}
 
 {% endblock %}

@@ -44,6 +44,26 @@ def home():
     """)
     estoque_baixo = cursor.fetchall()
 
+    # CAIXA ABERTO
+    cursor.execute("""
+        SELECT *
+        FROM caixas
+        WHERE status = 'ABERTO'
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+    caixa_aberto = cursor.fetchone()
+
+    total_caixa = 0
+
+    if caixa_aberto:
+        cursor.execute("""
+            SELECT COALESCE(SUM(valor_total), 0)
+            FROM vendas
+            WHERE date(data_venda) = date('now')
+        """)
+        total_caixa = cursor.fetchone()[0]
+
     conn.close()
 
     return render_template(
@@ -52,9 +72,10 @@ def home():
         total_vendas=total_vendas,
         faturamento=faturamento,
         produto_mais_vendido=produto_mais_vendido,
-        estoque_baixo=estoque_baixo
+        estoque_baixo=estoque_baixo,
+        caixa_aberto=caixa_aberto,
+        total_caixa=total_caixa
     )
-
 
 # ---------------- PRODUTOS ----------------
 @app.route('/produtos', methods=['GET', 'POST'])
@@ -339,7 +360,7 @@ def relatorio_vendas():
     conn = conectar()
     cursor = conn.cursor()
 
-    # 💰 TOTAL DO DIA (VALOR)
+    #  TOTAL DO DIA (VALOR)
     cursor.execute("""
         SELECT COALESCE(SUM(valor_total), 0)
         FROM vendas
@@ -386,20 +407,63 @@ def relatorio_vendas():
         vendas_total=vendas_total
     )
 
-@app.route('/fechar_caixa')
+@app.route('/fechar_caixa', methods=['GET', 'POST'])
 def fechar_caixa():
+
     conn = conectar()
     cursor = conn.cursor()
 
-    #  VENDAS DO DIA
+    # procura caixa aberto
+    cursor.execute("""
+        SELECT *
+        FROM caixas
+        WHERE status = 'ABERTO'
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+
+    caixa = cursor.fetchone()
+
+    if not caixa:
+        flash("Nenhum caixa aberto.")
+        conn.close()
+        return redirect('/')
+
+    # ---------------- POST (FECHAR CAIXA) ----------------
+    if request.method == 'POST':
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(valor_total), 0)
+            FROM vendas
+            WHERE date(data_venda) = date('now')
+        """)
+
+        total_dia = cursor.fetchone()[0]
+
+        cursor.execute("""
+            UPDATE caixas
+            SET
+                data_fechamento = datetime('now'),
+                valor_vendido = ?,
+                status = 'FECHADO'
+            WHERE id = ?
+        """, (total_dia, caixa[0]))
+
+        conn.commit()
+        conn.close()
+
+        flash(f"Caixa fechado com sucesso. Total vendido: R$ {total_dia:.2f}")
+        return redirect('/')
+
+    # ---------------- GET (RESUMO) ----------------
+
     cursor.execute("""
         SELECT COALESCE(SUM(valor_total), 0)
         FROM vendas
         WHERE date(data_venda) = date('now')
     """)
-    total_dia = cursor.fetchone()[0]
+    total_caixa = cursor.fetchone()[0]
 
-    #  ITENS VENDIDOS HOJE
     cursor.execute("""
         SELECT COALESCE(SUM(quantidade), 0)
         FROM vendas
@@ -407,7 +471,6 @@ def fechar_caixa():
     """)
     itens_dia = cursor.fetchone()[0]
 
-    #  PRODUTOS MAIS VENDIDOS HOJE
     cursor.execute("""
         SELECT produtos.nome, SUM(vendas.quantidade) as total_qtd
         FROM vendas
@@ -423,9 +486,10 @@ def fechar_caixa():
 
     return render_template(
         "fechar_caixa.html",
-        total_dia=total_dia,
+        total_caixa=total_caixa,
         itens_dia=itens_dia,
-        ranking=ranking
+        ranking=ranking,
+        caixa=caixa
     )
 
 @app.route('/fiado_funcionario/<nome>')
@@ -489,6 +553,56 @@ def funcionarios():
     conn.close()
 
     return render_template("funcionarios.html", funcionarios=lista)
+
+@app.route('/abrir_caixa', methods=['GET', 'POST'])
+def abrir_caixa():
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # verifica caixa aberto
+    cursor.execute("""
+        SELECT id
+        FROM caixas
+        WHERE status = 'ABERTO'
+        LIMIT 1
+    """)
+
+    caixa_existente = cursor.fetchone()
+
+    if caixa_existente:
+        flash("Já existe um caixa aberto.")
+        conn.close()
+        return redirect('/')
+
+    if request.method == 'POST':
+
+        valor_inicial = float(request.form['valor_inicial'])
+
+        cursor.execute("""
+            INSERT INTO caixas (
+                data_abertura,
+                valor_inicial,
+                status
+            )
+            VALUES (
+                datetime('now'),
+                ?,
+                'ABERTO'
+            )
+        """, (valor_inicial,))
+
+        conn.commit()
+        conn.close()
+
+        flash("Caixa aberto com sucesso!")
+        return redirect('/')
+
+    conn.close()
+
+    return render_template(
+        'abrir_caixa.html'
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

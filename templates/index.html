@@ -37,13 +37,58 @@
         {% endif %}
     </div>
 
+    <!-- CAIXA -->
+    <div class="cartao">
+        <h3 class="cartao-titulo">Caixa</h3>
+
+        {% if caixa_aberto %}
+
+            <p>
+                <strong>Status:</strong>
+                <span class="status-caixa-aberto">ABERTO</span>
+            </p>
+
+            <p>
+                <strong>Data/Hora de abertura:</strong>
+                {{ caixa_aberto[1] }}
+            </p>
+
+            <p>
+                <strong>Valor inicial:</strong>
+                R$ {{ "%.2f"|format(caixa_aberto[3]) }}
+            </p>
+
+            <br>
+
+            <a href="/fechar_caixa" class="botao botao-secundario">
+                Fechar Caixa
+            </a>
+
+        {% else %}
+
+            <p>
+                <strong>Status:</strong>
+                <span class="status-caixa-fechado">FECHADO</span>
+            </p>
+
+            <br>
+
+            <a href="/abrir_caixa" class="botao">
+                Abrir Caixa
+            </a>
+
+        {% endif %}
+    </div>
+
     <div class="cartao">
         <h3 class="cartao-titulo">Produtos com estoque baixo</h3>
 
         {% if estoque_baixo %}
             <ul class="lista-simples">
                 {% for produto in estoque_baixo %}
-                    <li class="aviso-estoque-baixo">{{ produto[0] }} — {{ produto[1] }} unidades</li>
+                    <li class="aviso-estoque-baixo">
+                        {{ produto[0] }} — {{ produto[1] }} unidades
+                    </li>
                 {% endfor %}
             </ul>
         {% else %}
@@ -53,11 +98,31 @@
 
     <div class="cartao">
         <h3 class="cartao-titulo">Acesso rápido</h3>
+
         <div class="links-rodape-pagina">
             <a class="botao" href="/produtos">Produtos</a>
+
             <a class="botao" href="/vendas">Vendas</a>
-            <a class="botao" href="/relatorio_vendas">Relatório de Vendas</a>
-            <a class="botao" href="/funcionarios">Funcionários/Dívidas</a>
+
+            <a class="botao" href="/relatorio_vendas">
+                Relatório de Vendas
+            </a>
+
+            <a class="botao" href="/funcionarios">
+                Funcionários/Dívidas
+            </a>
+
+            {% if caixa_aberto %}
+                <a class="botao botao-secundario"
+                   href="/fechar_caixa">
+                    Fechar Caixa
+                </a>
+            {% else %}
+                <a class="botao"
+                   href="/abrir_caixa">
+                    Abrir Caixa
+                </a>
+            {% endif %}
         </div>
     </div>
 

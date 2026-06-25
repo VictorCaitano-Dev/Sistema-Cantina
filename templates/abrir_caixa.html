@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block titulo %}Abrir Caixa{% endblock %}
+
+{% block conteudo %}
+
+<div class="cartao">
+
+    <h2 class="cartao-titulo">Abrir Caixa</h2>
+
+    <form method="POST">
+
+        <div class="campo">
+            <label>Valor inicial do caixa</label>
+            <input
+                type="number"
+                step="0.01"
+                name="valor_inicial"
+                required>
+        </div>
+
+        <button type="submit">
+            Abrir Caixa
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
